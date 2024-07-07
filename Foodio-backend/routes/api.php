@@ -4,7 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\LoginController;
 use App\Http\Controllers\API\Auth\RegisterController;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\MealController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,24 +20,24 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 |
 */
 
-// public routes
+// Public routes
 Route::post('login', [LoginController::class, 'login']);
 Route::post('register', [RegisterController::class, 'register']);
 
-// seller routes
+// Seller routes
 Route::middleware(['auth.jwt', 'isSeller'])->group(function() {
-    //for seller
-
-    //QR code generation
+    Route::resource('restaurants', RestaurantController::class);
+    Route::resource('meals', MealController::class);
     Route::get('/generate-qr-code', function () {
         $qrCode = QrCode::size(200)->generate('Hello, this is a QR code');
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
     });
 });
 
-// buyer  routes
+// Buyer routes
 Route::middleware('auth.jwt')->group(function () {
-    //for buyer
+    Route::resource('restaurants', RestaurantController::class)->only(['index', 'show']);
+    Route::resource('meals', MealController::class)->only(['index', 'show']);
+    Route::resource('reviews', ReviewController::class)->only(['store', 'index']);
+    Route::resource('orders', OrderController::class)->only(['store', 'index', 'show']);
 });
-
-
